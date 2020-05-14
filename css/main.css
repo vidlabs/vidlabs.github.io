@@ -1,0 +1,29 @@
+html,
+body {
+  height: 100%;
+}
+
+.center-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-text {
+  text-align: center;
+  font-family: "DM Mono", monospace;
+  font-size: 1.4 em;
+  width: 50%;
+  height: 300px;
+  line-height: 2;
+}
+
+a:link,
+a:visited {
+  color: Black;
+  font-family: "DM Mono", monospace;
+  font-size: 1.4 em;
+  text-decoration: underline;
+  target-new: none;
+}
