@@ -22,6 +22,7 @@ body {
 a:link,
 a:visited {
   color: Black;
+  word-break: break-all;
   font-family: "DM Mono", monospace;
   font-size: 1.4 em;
   text-decoration: underline;
