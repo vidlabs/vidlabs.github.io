@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Financiamento - Parcela Fixa</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+    .container {
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.8rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    button:hover {
+      background: #1e40af;
+      cursor: pointer;
+    }
+    .results {
+      margin-top: 1.5rem;
+      background: #f1f5f9;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    canvas {
+      margin-top: 1.5rem;
+      width: 100% !important;
+      height: 260px !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Financiamento</h1>
+    <label>Valor Financiado (R$)</label>
+    <input type="number" id="valor" placeholder="Ex: 100000" />
+
+    <label>Parcela Fixa (R$)</label>
+    <input type="number" id="parcela" placeholder="Ex: 2000" />
+
+    <label>Juros Anual (%)</label>
+    <input type="number" id="juros" placeholder="Ex: 12" />
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div class="results" id="resultado"></div>
+
+    <canvas id="grafico"></canvas>
+  </div>
+
+  <script>
+    let grafico = null;
+
+    function calcular() {
+      const valor = parseFloat(document.getElementById("valor").value);
+      const parcela = parseFloat(document.getElementById("parcela").value);
+      const jurosAnual = parseFloat(document.getElementById("juros").value);
+
+      if (!valor || !parcela || !jurosAnual) {
+        alert("Por favor, preencha todos os campos corretamente.");
+        return;
+      }
+
+      const jurosMensal = Math.pow(1 + jurosAnual / 100, 1 / 12) - 1;
+      let saldo = valor;
+      let totalPago = 0;
+      let parcelas = 0;
+      const saldos = [saldo];
+
+      while (saldo > 0 && parcelas < 1000) {
+        const jurosMes = saldo * jurosMensal;
+        const amortizacao = parcela - jurosMes;
+        saldo -= amortizacao;
+        totalPago += parcela;
+        parcelas++;
+        saldos.push(Math.max(saldo, 0));
+        if (saldo < 0) saldo = 0;
+      }
+
+      const tempoAnos = Math.floor(parcelas / 12);
+      const tempoMeses = parcelas % 12;
+      const totalJuros = totalPago - valor;
+
+      const ultimaParcela = saldo < 0 ? parcela + saldo : parcela;
+
+      document.getElementById("resultado").innerHTML = `
+        <b>Quantidade de parcelas:</b> ${parcelas}<br>
+        <b>Valor total pago:</b> R$ ${totalPago.toFixed(2)}<br>
+        <b>Total de juros pagos:</b> R$ ${totalJuros.toFixed(2)}<br>
+        <b>Duração:</b> ${tempoAnos} anos e ${tempoMeses} meses<br>
+        <b>Última parcela:</b> R$ ${ultimaParcela.toFixed(2)}
+      `;
+
+      // Atualiza gráfico
+      const ctx = document.getElementById("grafico");
+      if (grafico) grafico.destroy();
+      grafico = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: saldos.map((_, i) => i),
+          datasets: [
+            {
+              label: "Saldo Devedor (R$)",
+              data: saldos,
+              borderColor: "#2563eb",
+              borderWidth: 2,
+              fill: false,
+              tension: 0.1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            x: { title: { display: true, text: "Parcelas" } },
+            y: { title: { display: true, text: "Saldo (R$)" } },
+          },
+        },
+      });
+    }
+  </script>
+</body>
+</html>
